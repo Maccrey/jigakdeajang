@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#fff7ed"><title>통계 보기 | 지각대장</title><link rel="icon" type="image/svg+xml" href="./favicon.svg"><link rel="stylesheet" href="./style.css"></head>
+<body data-page="stats"><div class="app-shell"><aside class="sidebar">
+  <div class="brand"><div class="brand-mark">👑</div><div><h1>지각대장</h1><p>오늘도 무사출근 프로젝트</p></div></div>
+  <nav class="nav">
+    <a class="nav-item" href="./index.html"><span class="nav-emoji">⏰</span><span>출근하기</span></a>
+    <a class="nav-item" href="./records.html"><span class="nav-emoji">📒</span><span>내 기록</span></a>
+    <a class="nav-item active" href="./stats.html"><span class="nav-emoji">📊</span><span>통계 보기</span></a>
+      <a class="nav-item" href="./calendar.html"><span class="nav-emoji">📅</span><span>일정 기록</span></a>
+    <a class="nav-item" href="./settings.html"><span class="nav-emoji">⚙️</span><span>설정</span></a>
+  </nav>
+  <div class="sidebar-note"><strong>현재 지각 규칙</strong><p><span id="ruleStart">09:00</span>까지 정상 출근<br>이후 1분당 <span id="ruleFee">1,000원</span><br><span id="ruleEmployees">직원 0명</span></p></div>
+</aside><main class="main-page"><header class="page-head"><div><span class="eyebrow">이번 달 통계</span><h2>통계 보기</h2><p>이번 달 지각 흐름을 그래프로 확인하세요.</p></div><div class="clock-box mini"><span>현재 기준시간</span><strong id="liveClock">--:--:--</strong></div></header>
+<section class="stats-page"><div class="metric-grid compact">
+  <article class="metric card"><span>👛</span><div><small>총 지각 과금</small><strong id="monthlyFee">0원</strong><em id="monthlyCount">0회</em></div></article>
+  <article class="metric card"><span>🕒</span><div><small>평균 지각 시간</small><strong id="avgLate">0분</strong><em>지각일 기준</em></div></article>
+  <article class="metric card"><span>👑</span><div><small>최대 지각</small><strong id="maxLate">0분</strong><em id="maxLateDate">기록 없음</em></div></article>
+  <article class="metric card"><span>🎯</span><div><small>연속 지각</small><strong id="streakLate">0일</strong><em>연속 기록</em></div></article>
+</div>
+<div class="stats-charts"><article class="chart-card card"><div class="section-heading"><div><span>📈</span><h3>일별 지각 과금</h3></div></div><div id="barChart" class="bar-chart"></div></article><article class="donut-card card"><div class="section-heading"><div><span>⭐</span><h3>지각 금액 비율</h3></div></div><div class="donut-wrap"><div class="donut" id="donutChart"><div><span>이번 달</span><strong id="donutTotal">0원</strong></div></div><div id="donutLegend" class="legend"></div></div></article></div></section></main></div><script src="./app.js"></script></body></html>

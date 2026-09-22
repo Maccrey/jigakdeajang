@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fff7ed">
+  <title>일정 기록 | 지각대장</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body data-page="calendar">
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">👑</div><div><h1>지각대장</h1><p>오늘도 무사출근 프로젝트</p></div></div>
+    <nav class="nav">
+      <a class="nav-item" href="./index.html"><span class="nav-emoji">⏰</span><span>출근하기</span></a>
+      <a class="nav-item" href="./records.html"><span class="nav-emoji">📒</span><span>내 기록</span></a>
+      <a class="nav-item" href="./stats.html"><span class="nav-emoji">📊</span><span>통계 보기</span></a>
+      <a class="nav-item active" href="./calendar.html"><span class="nav-emoji">📅</span><span>일정 기록</span></a>
+      <a class="nav-item" href="./settings.html"><span class="nav-emoji">⚙️</span><span>설정</span></a>
+    </nav>
+    <div class="sidebar-note"><strong>현재 지각 규칙</strong><p><span id="ruleStart">09:00</span>까지 정상 출근<br>이후 1분당 <span id="ruleFee">1,000원</span><br><span id="ruleEmployees">직원 0명</span></p></div>
+  </aside>
+
+  <main class="calendar-page-v19">
+    <header class="calendar-head-v19">
+      <div>
+        <span class="eyebrow">일정 관리</span>
+        <h2>일정 기록</h2>
+        <p>월·주·일 단위로 일정을 확인하고 추가·수정·삭제할 수 있습니다.</p>
+      </div>
+      <div class="calendar-head-actions-v19">
+        <div class="calendar-search-v19"><span>⌕</span><input id="calendarSearch" type="search" placeholder="일정 검색"></div>
+        <button class="ghost-btn big" id="calendarTodayBtn" type="button">오늘</button>
+        <button class="primary-btn calendar-add-v19" id="calendarAddBtn" type="button">＋ 일정 추가</button>
+      </div>
+    </header>
+
+    <section class="calendar-toolbar-v19">
+      <div class="calendar-nav-v19">
+        <button id="calendarPrevBtn" type="button" aria-label="이전">‹</button>
+        <button id="calendarNextBtn" type="button" aria-label="다음">›</button>
+        <strong id="calendarTitle">2026년 9월</strong>
+      </div>
+      <div class="calendar-segment-v19" role="group" aria-label="보기 방식">
+        <button class="active" data-cal-view="month" type="button">월</button>
+        <button data-cal-view="week" type="button">주</button>
+        <button data-cal-view="day" type="button">일</button>
+      </div>
+    </section>
+
+    <section class="calendar-workspace-v19">
+      <article class="card calendar-main-v19">
+        <div id="calendarView" class="calendar-view-v19"></div>
+      </article>
+      <aside class="card calendar-agenda-v19">
+        <div class="agenda-date-v19"><span id="agendaWeekday">오늘</span><strong id="agendaDate">9월 22일</strong></div>
+        <button class="agenda-add-v19" id="agendaAddBtn" type="button">＋ 이 날짜에 일정 추가</button>
+        <div id="agendaList" class="agenda-list-v19"></div>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<dialog id="eventDialog" class="event-dialog-v19">
+  <form id="eventForm" method="dialog" class="event-form-v19">
+    <div class="dialog-head"><h3 id="eventDialogTitle">새 일정</h3><button type="button" id="eventCloseBtn">✕</button></div>
+    <input id="eventId" type="hidden">
+    <label>제목<input id="eventTitleInput" type="text" maxlength="60" placeholder="일정 제목" required></label>
+    <label>날짜<input id="eventDateInput" type="date" required></label>
+    <label class="all-day-field-v20">
+      <span>종일 일정</span>
+      <span class="all-day-control-v20">
+        <span class="all-day-text-v20">종일 일정으로 등록</span>
+        <input id="eventAllDayInput" type="checkbox">
+      </span>
+    </label>
+    <div class="event-two-v19" id="eventTimeRow">
+      <label>시작<input id="eventStartInput" type="time" value="09:00"></label>
+      <label>종료<input id="eventEndInput" type="time" value="10:00"></label>
+    </div>
+    <div class="event-two-v19">
+      <label>분류<select id="eventCategoryInput"><option value="work">업무</option><option value="important">중요</option><option value="personal">개인</option><option value="etc">기타</option></select></label>
+      <label>반복<select id="eventRepeatInput"><option value="none">반복 안 함</option><option value="daily">매일</option><option value="weekly">매주</option><option value="monthly">매월</option></select></label>
+    </div>
+    <label>메모<textarea id="eventNotesInput" rows="4" maxlength="500" placeholder="메모를 입력하세요"></textarea></label>
+    <div class="event-dialog-actions-v19">
+      <button class="ghost-btn danger-ghost-v19" id="eventDeleteBtn" type="button">삭제</button>
+      <span></span>
+      <button class="ghost-btn" id="eventCancelBtn" type="button">취소</button>
+      <button class="primary-btn" id="eventSaveBtn" type="submit">저장</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="./app.js"></script>
+<script src="./calendar.js"></script>
+</body>
+</html>

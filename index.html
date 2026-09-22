@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fff7ed">
+  <title>출근하기 | 지각대장</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body data-page="checkin">
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">👑</div>
+      <div><h1>지각대장</h1><p>오늘도 무사출근 프로젝트</p></div>
+    </div>
+    <nav class="nav">
+      <a class="nav-item active" href="./index.html"><span class="nav-emoji">⏰</span><span>출근하기</span></a>
+      <a class="nav-item" href="./records.html"><span class="nav-emoji">📒</span><span>내 기록</span></a>
+      <a class="nav-item" href="./stats.html"><span class="nav-emoji">📊</span><span>통계 보기</span></a>
+      <a class="nav-item" href="./calendar.html"><span class="nav-emoji">📅</span><span>일정 기록</span></a>
+      <a class="nav-item" href="./settings.html"><span class="nav-emoji">⚙️</span><span>설정</span></a>
+    </nav>
+    <div class="sidebar-note">
+      <strong>현재 지각 규칙</strong>
+      <p><span id="ruleStart">09:00</span>까지 정상 출근<br>
+      이후 1분당 <span id="ruleFee">1,000원</span><br>
+      <span id="ruleEmployees">직원 0명</span></p>
+    </div>
+  </aside>
+
+  <main class="checkin-v13">
+    <header class="checkin-v13-head">
+      <div>
+        <span class="eyebrow">오늘의 출근 게임</span>
+        <h2>출근하기</h2>
+        <p>직원을 선택하고 출근 시각을 입력하면 지각시간과 과금액을 바로 계산합니다.</p>
+      </div>
+      <div class="clock-box"><span>현재 기준시간</span><strong id="liveClock">--:--:--</strong></div>
+    </header>
+
+    <section class="checkin-v13-body">
+      <article class="character-stage-v13 card" aria-label="달리는 오리 캐릭터">
+        <img class="character-bg-v13" src="./hero-bg-main.png" alt="지각대장 오피스 배경">
+        <div class="character-duck-wrap-v13">
+          <div class="character-shadow-v13"></div>
+          <img class="character-duck-v13" src="./duck-runner.png" alt="출근을 위해 달려가는 오리">
+        </div>
+        <div class="character-copy-v13">
+          <strong>오늘도 출근 완료를 향해!</strong>
+          <span>배경은 고정, 오리만 달립니다.</span>
+        </div>
+      </article>
+
+      <section class="checkin-panel-v13">
+        <div class="kpi-row-v13">
+          <div><span>이번 달 과금</span><strong id="monthlyFee">0원</strong></div>
+          <div><span>지각 횟수</span><strong id="monthlyCount">0회</strong></div>
+          <div><span>평균 지각</span><strong id="avgLate">0분</strong></div>
+          <div><span>최대 지각</span><strong id="maxLate">0분</strong></div>
+          <div><span>연속 지각</span><strong id="streakLate">0일</strong></div>
+        </div>
+
+        <article class="card punch-card-v13">
+          <div class="section-heading compact">
+            <div><span>📝</span><h3>오늘 출근 기록</h3></div>
+            <span class="status-pill" id="timeSource">시간 확인 중</span>
+          </div>
+
+          <form id="checkinForm" class="punch-form-v13">
+            <label class="employee-field-v22">
+              <span class="employee-label-row-v22">
+                <span>직원명</span>
+                <span class="employee-lock-v22">
+                  <input id="employeeLockInput" type="checkbox">
+                  <span>직원 고정</span>
+                </span>
+              </span>
+              <select id="nameInput" required>
+                <option value="">직원을 선택하세요</option>
+              </select>
+              <small id="employeeHelp">체크하면 선택한 직원을 이 브라우저에서 고정합니다.</small>
+            </label>
+
+            <label>
+              <span>출근 날짜/시간</span>
+              <input id="dateTimeInput" type="datetime-local" step="60" required>
+              <small>현재 시간이 기본값이며 직접 수정할 수 있습니다.</small>
+            </label>
+
+            <div class="rule-row-v13">
+              <div class="editable-start-time-v15"><span>적용 출근시간 <em>클릭하여 수정</em></span><input id="appliedStartTime" type="time" value="09:00" aria-label="적용 출근시간"></div>
+              <div><span>분당 과금액</span><strong id="appliedFee">1,000원</strong></div>
+            </div>
+
+            <button class="primary-btn punch-button-v13" type="submit">🐾 출근 기록하기</button>
+          </form>
+        </article>
+
+        <article class="card result-card-v13">
+          <div class="result-title-v13">
+            <span class="danger-pill" id="resultBadge">출근 전</span>
+            <div>
+              <strong id="resultText">직원을 선택하고 출근 기록을 입력해 주세요.</strong>
+              <p id="resultSubtext">설정에 저장된 출근시간과 분당 과금액을 자동 적용합니다.</p>
+            </div>
+          </div>
+
+          <div class="result-values-v13">
+            <div><span>기준시간</span><b id="usedStartTime">09:00</b></div>
+            <div><span>지각 시간</span><b id="lateMinutes">0분</b></div>
+            <div class="fee"><span>과금 금액</span><b id="lateFee">0원</b></div>
+          </div>
+          <div class="quote-v13" id="quoteText">“오늘의 1분이 내일의 커피값을 지킨다.”</div>
+        </article>
+      </section>
+    </section>
+  </main>
+</div>
+<script src="./app.js"></script>
+</body>
+</html>

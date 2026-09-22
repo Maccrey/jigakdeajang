@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#fff7ed"><title>설정 | 지각대장</title><link rel="icon" type="image/svg+xml" href="./favicon.svg"><link rel="stylesheet" href="./style.css"></head>
+<body data-page="settings"><div class="app-shell"><aside class="sidebar">
+  <div class="brand"><div class="brand-mark">👑</div><div><h1>지각대장</h1><p>오늘도 무사출근 프로젝트</p></div></div>
+  <nav class="nav">
+    <a class="nav-item" href="./index.html"><span class="nav-emoji">⏰</span><span>출근하기</span></a>
+    <a class="nav-item" href="./records.html"><span class="nav-emoji">📒</span><span>내 기록</span></a>
+    <a class="nav-item" href="./stats.html"><span class="nav-emoji">📊</span><span>통계 보기</span></a>
+      <a class="nav-item" href="./calendar.html"><span class="nav-emoji">📅</span><span>일정 기록</span></a>
+    <a class="nav-item active" href="./settings.html"><span class="nav-emoji">⚙️</span><span>설정</span></a>
+  </nav>
+  <div class="sidebar-note"><strong>현재 지각 규칙</strong><p><span id="ruleStart">09:00</span>까지 정상 출근<br>이후 1분당 <span id="ruleFee">1,000원</span><br><span id="ruleEmployees">직원 0명</span></p></div>
+</aside><main class="main-page"><header class="page-head"><div><span class="eyebrow">기본값 관리</span><h2>설정</h2><p>출근시간·직원명단·분당 과금액을 저장하면 출근하기 페이지에 바로 적용됩니다.</p></div><div class="clock-box mini"><span>현재 기준시간</span><strong id="liveClock">--:--:--</strong></div></header>
+<section class="settings-page"><article class="settings-card card settings-wide">
+  <div class="settings-two-col">
+    <label>기본 출근시간<input type="time" id="startTimeSetting" value="09:00" required><small>이 시간까지는 정상 출근으로 처리합니다.</small></label>
+    <label>1분당 과금액<input type="number" id="feeSetting" value="1000" min="0" step="100" required><small>기준시간보다 1분 늦을 때마다 적용됩니다.</small></label>
+  </div>
+  <label class="employee-setting">직원명단
+    <textarea id="employeeSetting" rows="7" placeholder="한 줄에 한 명씩 입력하세요.&#10;예)&#10;김지각&#10;박출근&#10;이정시"></textarea>
+    <small>한 줄에 한 명씩 입력하세요. 저장 후 출근하기 페이지의 드롭다운에 표시됩니다.</small>
+  </label>
+  <div class="settings-preview"><span>현재 적용 규칙</span><strong id="settingsPreview">09:00까지 정상 · 이후 1분당 1,000원</strong><em id="employeePreview">등록 직원 0명</em></div>
+  <button class="primary-btn" id="saveSettings" type="button">설정 저장</button>
+<section class="backup-panel" aria-labelledby="backupTitle">
+  <div class="backup-head"><div><span class="kicker">데이터 관리</span><h3 id="backupTitle">백업 · 복원</h3><p>출근기록, 일정기록, 직원명단, 출근시간, 과금요금을 하나의 JSON 파일로 저장하고 다시 복원할 수 있습니다.</p></div><span class="backup-badge" id="backupCount">기록 0건</span></div>
+  <div class="backup-actions">
+    <button class="ghost-btn big" id="backupDataBtn" type="button">💾 데이터 백업</button>
+    <label class="restore-file-label" for="restoreFileInput">📂 백업 파일 선택</label>
+    <input id="restoreFileInput" class="restore-file-input" type="file" accept="application/json,.json">
+    <button class="primary-btn restore-btn" id="restoreDataBtn" type="button" disabled>복원하기</button>
+  </div>
+  <div class="restore-file-info" id="restoreFileInfo">선택된 백업 파일이 없습니다.</div>
+  <div class="backup-notice">복원하면 현재 브라우저에 저장된 설정·출근기록·일정기록이 선택한 백업 데이터로 교체됩니다.</div>
+</section>
+</article></section></main></div><script src="./app.js"></script></body></html>
