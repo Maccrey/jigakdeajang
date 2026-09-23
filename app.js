@@ -145,7 +145,7 @@ function mountKakaoVerticalAd(){
   const rail=document.createElement('aside');
   rail.className='ad-rail';
   rail.setAttribute('aria-label','광고');
-  rail.innerHTML='<ins class="kakao_ad_area" style="display:none;" data-ad-unit="DAN-R45Tq16u7Hn95yhG" data-ad-width="160" data-ad-height="600"></ins>';
+  rail.innerHTML='<ins class="kakao_ad_area" style="display:none;" data-ad-unit="DAN-Ioh9z314VzVOKm6C" data-ad-width="160" data-ad-height="600"></ins>';
   shell.appendChild(rail);
 
   const loader=document.createElement('script');
