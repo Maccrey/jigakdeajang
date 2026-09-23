@@ -131,10 +131,13 @@ function mountKakaoVerticalAd(){
   const style=document.createElement('style');
   style.textContent=`
     .ad-rail{display:none}
-    @media(min-width:1320px){
+    @media(min-width:1240px){
       .app-shell{width:min(1400px,calc(100vw - 28px));grid-template-columns:210px minmax(0,1fr) 160px}
       .ad-rail{height:100dvh;min-width:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:12px 0}
       .ad-rail .kakao_ad_area{display:block;width:160px;min-height:600px}
+    }
+    @media(min-width:1240px) and (max-width:1375px){
+      .checkin-v13-body{grid-template-columns:minmax(430px,1.1fr) minmax(360px,.9fr)}
     }
   `;
   document.head.appendChild(style);
