@@ -123,5 +123,35 @@ function bind(){
   const ex=$('#exportBtn');
   if(ex)ex.onclick=()=>{const rows=monthRecords(),csv=['날짜,이름,출근시간,기준출근시간,분당과금액,지각분,과금액',...rows.map(r=>{const d=new Date(r.datetime);return `${fmtFullDate(d)},"${String(r.name).replaceAll('"','""')}",${fmtTime(d)},${r.startTime||settings.startTime},${r.feePerMinute||settings.feePerMinute},${r.late},${r.fee}`})].join('\n'),blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`지각대장_${referenceNow.getFullYear()}_${pad(referenceNow.getMonth()+1)}.csv`;a.click();URL.revokeObjectURL(a.href)};
 }
+
+function mountKakaoVerticalAd(){
+  const shell=document.querySelector('.app-shell');
+  if(!shell||shell.querySelector('.ad-rail'))return;
+
+  const style=document.createElement('style');
+  style.textContent=`
+    .ad-rail{display:none}
+    @media(min-width:1320px){
+      .app-shell{width:min(1400px,calc(100vw - 28px));grid-template-columns:210px minmax(0,1fr) 160px}
+      .ad-rail{height:100dvh;min-width:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:12px 0}
+      .ad-rail .kakao_ad_area{display:block;width:160px;min-height:600px}
+    }
+  `;
+  document.head.appendChild(style);
+
+  const rail=document.createElement('aside');
+  rail.className='ad-rail';
+  rail.setAttribute('aria-label','광고');
+  rail.innerHTML='<ins class="kakao_ad_area" style="display:none;" data-ad-unit="DAN-R45Tq16u7Hn95yhG" data-ad-width="160" data-ad-height="600"></ins>';
+  shell.appendChild(rail);
+
+  const loader=document.createElement('script');
+  loader.type='text/javascript';
+  loader.src='https://t1.kakaocdn.net/kas/static/ba.min.js';
+  loader.async=true;
+  document.body.appendChild(loader);
+}
+mountKakaoVerticalAd();
+
 (async()=>{referenceNow=await getReferenceTime();applyRuleText();populateEmployeeSelect();bindEmployeeLock();applyEmployeeLock();refreshBackupUi();$('#dateTimeInput')&&($('#dateTimeInput').value=toLocalInputValue(referenceNow));$('#startTimeSetting')&&($('#startTimeSetting').value=settings.startTime);$('#feeSetting')&&($('#feeSetting').value=settings.feePerMinute);$('#employeeSetting')&&($('#employeeSetting').value=settings.employees.join('\n'));updateClock();setInterval(updateClock,1000);bind();const last=monthRecords().slice(-1)[0]||null;updateResult(last);renderSummary()})();
 
