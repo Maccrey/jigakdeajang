@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#fff7ed">
+  <title>퇴근하기 | 지각대장</title><link rel="icon" type="image/svg+xml" href="./favicon.svg"><link rel="stylesheet" href="./style.css">
+</head>
+<body data-page="checkout">
+<div class="app-shell"><aside class="sidebar">
+  <div class="brand"><div class="brand-mark">👑</div><div><h1>지각대장</h1><p>오늘도 무사출근 프로젝트</p></div></div>
+  <nav class="nav">
+    <a class="nav-item" href="./index.html"><span class="nav-emoji">⏰</span><span>출근하기</span></a>
+    <a class="nav-item active" href="./checkout.html"><span class="nav-emoji">🌙</span><span>퇴근하기</span></a>
+    <a class="nav-item" href="./records.html"><span class="nav-emoji">📒</span><span>내 기록</span></a>
+    <a class="nav-item" href="./stats.html"><span class="nav-emoji">📊</span><span>통계 보기</span></a>
+    <a class="nav-item" href="./calendar.html"><span class="nav-emoji">📅</span><span>일정 기록</span></a>
+    <a class="nav-item" href="./settings.html"><span class="nav-emoji">⚙️</span><span>설정</span></a>
+  </nav>
+  <div class="sidebar-note"><strong>현재 지각 규칙</strong><p><span id="ruleStart">09:00</span>까지 정상 출근<br>이후 1분당 <span id="ruleFee">1,000원</span><br><span id="ruleEmployees">직원 0명</span></p></div>
+</aside>
+<main class="checkin-v13 checkout-main-v23">
+  <header class="checkin-v13-head"><div><span class="eyebrow">오늘 하루 마무리</span><h2>퇴근하기</h2><p>직원을 선택하고 퇴근 시각을 기록해 근무시간을 계산합니다.</p></div><div class="clock-box"><span>현재 기준시간</span><strong id="liveClock">--:--:--</strong></div></header>
+  <section class="checkin-v13-body checkout-workspace-v23">
+    <article class="character-stage-v13 card checkout-stage-v23" aria-label="퇴근하는 오리 캐릭터"><img class="character-bg-v13" src="./checkout-background.png" alt="노을이 비치는 저녁 사무실 배경"><div class="checkout-sunset-v23" aria-hidden="true"></div><div class="character-duck-wrap-v13"><div class="character-shadow-v13"></div><img class="character-duck-v13 checkout-duck-v23" src="./duck-checkout.png" alt="가방을 메고 손을 흔들며 퇴근하는 오리"></div><div class="character-copy-v13"><strong>오늘도 수고하셨어요!</strong><span>노을 아래 집으로 출발!</span></div></article>
+    <section class="checkin-panel-v13 checkout-panel-v23">
+      <div class="kpi-row-v13 checkout-kpis-v23"><div><span>이번 달 총 근무</span><strong id="monthlyWorkHours">0시간</strong></div><div><span>평균 근무</span><strong id="avgWorkHours">0시간</strong></div><div><span>최장 근무</span><strong id="maxWorkHours">0시간</strong></div><div><span>이번 달 퇴근</span><strong id="checkoutCount">0회</strong></div><div><span>현재 근무</span><strong id="activeShiftCount">0명</strong></div></div>
+      <article class="card punch-card-v13"><div class="section-heading compact"><div><span>🌙</span><h3>오늘 퇴근 기록</h3></div><span class="status-pill" id="checkoutStatus">기록 확인 중</span></div>
+        <form id="checkoutForm" class="punch-form-v13 checkout-form-v23"><label><span>직원명</span><select id="checkoutName" required><option value="">직원을 선택하세요</option></select><small id="checkoutEmployeeHelp">오늘 출근한 직원만 표시됩니다.</small></label><label><span>퇴근 날짜/시간</span><input id="checkoutDateTime" type="datetime-local" step="60" required><small>현재 시간이 기본값이며 직접 수정할 수 있습니다.</small></label><div class="checkout-shift-v23" id="checkoutShift">퇴근할 직원을 선택해 주세요.</div><button class="primary-btn punch-button-v13" id="checkoutSubmit" type="submit">🌙 퇴근 기록하기</button></form>
+      </article>
+      <article class="card result-card-v13 checkout-result-v23"><div class="result-title-v13"><span class="danger-pill safe" id="checkoutResultBadge">근무 중</span><div><strong id="checkoutResultText">오늘도 힘차게 하루를 마무리해요.</strong><p id="checkoutResultSubtext">퇴근 시각을 저장하면 실제 근무시간이 통계에 반영됩니다.</p></div></div><div class="result-values-v13"><div><span>출근 시간</span><b id="checkoutStartTime">--:--</b></div><div><span>퇴근 시간</span><b id="checkoutEndTime">--:--</b></div><div><span>총 근무시간</span><b id="checkoutDuration">--</b></div></div><div class="quote-v13">“오늘 하루도 정말 수고 많으셨어요.”</div></article>
+    </section>
+  </section>
+</main></div><script src="./app.js"></script></body></html>
