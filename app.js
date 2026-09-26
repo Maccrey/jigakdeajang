@@ -27,7 +27,7 @@ function requestClientIp(){return getClientIp().catch(()=>null)}
 function workMinutes(r){if(!r.checkoutDatetime)return 0;const mins=Math.floor((new Date(r.checkoutDatetime)-new Date(r.datetime))/60000);return Number.isFinite(mins)?Math.max(0,mins):0}
 function workLabel(mins){const h=Math.floor(mins/60),m=mins%60;return `${h}시간${m?` ${m}분`:''}`}
 function calcStreak(m){if(!m.length)return 0;const days=[...new Map(m.map(r=>[new Date(r.datetime).toDateString(),r])).values()];let s=0;for(let i=days.length-1;i>=0;i--){if(days[i].late>0)s++;else break}return s}
-function updateClock(){referenceNow=new Date(referenceNow.getTime()+1000);$('#liveClock')&&($('#liveClock').textContent=`${pad(referenceNow.getHours())}:${pad(referenceNow.getMinutes())}:${pad(referenceNow.getSeconds())}`)}
+function updateClock(){referenceNow=new Date();const clock=$('#liveClock');if(clock)clock.textContent=`${pad(referenceNow.getHours())}:${pad(referenceNow.getMinutes())}:${pad(referenceNow.getSeconds())}`}
 
 
 function applyEmployeeLock(){
@@ -170,5 +170,5 @@ function mountKakaoVerticalAd(){
 }
 mountKakaoVerticalAd();
 
-(async()=>{referenceNow=await getReferenceTime();applyRuleText();populateEmployeeSelect();bindEmployeeLock();applyEmployeeLock();refreshBackupUi();$('#dateTimeInput')&&($('#dateTimeInput').value=toLocalInputValue(referenceNow));$('#startTimeSetting')&&($('#startTimeSetting').value=settings.startTime);$('#feeSetting')&&($('#feeSetting').value=settings.feePerMinute);$('#employeeSetting')&&($('#employeeSetting').value=settings.employees.join('\n'));updateClock();setInterval(updateClock,1000);bind();const last=monthRecords().slice(-1)[0]||null;updateResult(last);renderSummary()})();
+(async()=>{referenceNow=await getReferenceTime();applyRuleText();populateEmployeeSelect();bindEmployeeLock();applyEmployeeLock();refreshBackupUi();$('#dateTimeInput')&&($('#dateTimeInput').value=toLocalInputValue(referenceNow));$('#startTimeSetting')&&($('#startTimeSetting').value=settings.startTime);$('#feeSetting')&&($('#feeSetting').value=settings.feePerMinute);$('#employeeSetting')&&($('#employeeSetting').value=settings.employees.join('\n'));updateClock();setInterval(updateClock,1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateClock()});window.addEventListener('pageshow',updateClock);window.addEventListener('focus',updateClock);bind();const last=monthRecords().slice(-1)[0]||null;updateResult(last);renderSummary()})();
 
