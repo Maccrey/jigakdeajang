@@ -1,11 +1,14 @@
 const STORAGE_KEY='latebook_records_v2', SETTINGS_KEY='latebook_settings_v3', CALENDAR_KEY='latebook_calendar_v1', EMPLOYEE_LOCK_KEY='latebook_employee_lock_v1';
 const LEGACY_SETTINGS_KEY='latebook_settings_v2', SHEETS_URL_KEY='latebook_sheets_url_v1';
+const SHEETS_GOOGLE_CLIENT_ID='371447135492-crpn69kh10okadluoo2lsvehrou4m2vb.apps.googleusercontent.com';
 const COLORS=['#4f7bd9','#ff7b7f','#ffbb61','#65c889','#9b7ae6','#f06ea8','#66b7d6','#f09f53','#7a9be6','#d67676'];
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)], money=n=>Number(n||0).toLocaleString('ko-KR')+'원', pad=n=>String(n).padStart(2,'0');
 const defaultSettings={startTime:'09:00',feePerMinute:1000,employees:[]};
 let settings=loadSettings();
 let records=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
 let calendarEvents=JSON.parse(localStorage.getItem(CALENDAR_KEY)||'[]');
+let sheetsIdToken=sessionStorage.getItem('latebook_sheets_id_token_v1')||'';
+try{if(sheetsIdToken&&Number(JSON.parse(atob(sheetsIdToken.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).exp)*1000<Date.now()){sessionStorage.removeItem('latebook_sheets_id_token_v1');sheetsIdToken=''}}catch{sessionStorage.removeItem('latebook_sheets_id_token_v1');sheetsIdToken=''}
 let referenceNow=new Date();
 
 function loadSettings(){
@@ -34,10 +37,12 @@ function bindLivePunchTime(input){
   input.addEventListener('input',()=>{input.dataset.autoTime='false'});
   input.addEventListener('change',()=>{input.dataset.autoTime='false'});
   const refresh=()=>{if(input.dataset.autoTime!=='false'&&!document.hidden)input.value=toLocalInputValue(new Date())};
+  const scheduleRefresh=()=>setTimeout(()=>{refresh();if(input.dataset.autoTime!=='false')scheduleRefresh()},60000-new Date().getSeconds()*1000-new Date().getMilliseconds());
   document.addEventListener('visibilitychange',refresh);
   window.addEventListener('focus',refresh);
   window.addEventListener('pageshow',refresh);
   refresh();
+  scheduleRefresh();
 }
 
 
@@ -126,7 +131,7 @@ function localDateKey(d){const x=new Date(d);return `${x.getFullYear()}-${pad(x.
 function bind(){
   const checkoutSelect=$('#checkoutName'),checkoutInput=$('#checkoutDateTime'),checkoutForm=$('#checkoutForm');
   initSheetsSettings();
-  if(checkoutSelect){const day=localDateKey(new Date()),allToday=records.filter(r=>localDateKey(new Date(r.datetime))===day).sort((a,b)=>new Date(a.datetime)-new Date(b.datetime)),available=allToday.filter(r=>!r.checkoutDatetime);available.forEach(r=>{const opt=document.createElement('option');opt.value=r.id;opt.textContent=r.name;checkoutSelect.appendChild(opt)});if(available.length===1)checkoutSelect.value=available[0].id;checkoutInput.value=toLocalInputValue(new Date());bindLivePunchTime(checkoutInput);const done=allToday.filter(r=>r.checkoutDatetime).slice(-1)[0];if(!available.length&&done){$('#checkoutStatus').textContent='퇴근 완료';$('#checkoutResultBadge').textContent='퇴근 완료';$('#checkoutResultText').textContent=`${done.name}님, 오늘도 수고하셨어요!`;$('#checkoutResultSubtext').textContent=`오늘 근무 ${workLabel(workMinutes(done))}을 기록했어요.`;$('#checkoutStartTime').textContent=fmtTime(new Date(done.datetime));$('#checkoutEndTime').textContent=fmtTime(new Date(done.checkoutDatetime));$('#checkoutDuration').textContent=workLabel(workMinutes(done));checkoutForm.querySelector('button').disabled=true;checkoutForm.querySelector('button').textContent='오늘 퇴근 기록 완료 ✓'}const showShift=()=>{const rec=available.find(r=>r.id===checkoutSelect.value),mins=rec?Math.floor((new Date(checkoutInput.value)-new Date(rec.datetime))/60000):0;$('#checkoutShift').textContent=rec?`${rec.name}님 · 출근 ${fmtTime(new Date(rec.datetime))} · 예상 근무 ${workLabel(Math.max(0,mins))}`:'퇴근할 직원을 선택해 주세요.';if(rec){$('#checkoutStartTime').textContent=fmtTime(new Date(rec.datetime));$('#checkoutEndTime').textContent=fmtTime(new Date(checkoutInput.value));$('#checkoutDuration').textContent=workLabel(Math.max(0,mins));$('#checkoutResultBadge').textContent='근무 중';$('#checkoutResultText').textContent=`${rec.name}님, 오늘도 힘차게 하루를 마무리해요.`}};checkoutSelect.addEventListener('change',showShift);checkoutInput.addEventListener('input',showShift);showShift();$('#checkoutStatus').textContent=available.length?'퇴근 대기':done?'퇴근 완료':'출근 기록 없음'}
+  if(checkoutSelect){const day=localDateKey(new Date()),allToday=records.filter(r=>localDateKey(new Date(r.datetime))===day).sort((a,b)=>new Date(a.datetime)-new Date(b.datetime)),available=allToday.filter(r=>!r.checkoutDatetime);available.forEach(r=>{const opt=document.createElement('option');opt.value=r.id;opt.textContent=r.name;checkoutSelect.appendChild(opt)});if(available.length===1)checkoutSelect.value=available[0].id;bindLivePunchTime(checkoutInput);const done=allToday.filter(r=>r.checkoutDatetime).slice(-1)[0];if(!available.length&&done){$('#checkoutStatus').textContent='퇴근 완료';$('#checkoutResultBadge').textContent='퇴근 완료';$('#checkoutResultText').textContent=`${done.name}님, 오늘도 수고하셨어요!`;$('#checkoutResultSubtext').textContent=`오늘 근무 ${workLabel(workMinutes(done))}을 기록했어요.`;$('#checkoutStartTime').textContent=fmtTime(new Date(done.datetime));$('#checkoutEndTime').textContent=fmtTime(new Date(done.checkoutDatetime));$('#checkoutDuration').textContent=workLabel(workMinutes(done));checkoutForm.querySelector('button').disabled=true;checkoutForm.querySelector('button').textContent='오늘 퇴근 기록 완료 ✓'}const showShift=()=>{const rec=available.find(r=>r.id===checkoutSelect.value),mins=rec?Math.floor((new Date(checkoutInput.value)-new Date(rec.datetime))/60000):0;$('#checkoutShift').textContent=rec?`${rec.name}님 · 출근 ${fmtTime(new Date(rec.datetime))} · 예상 근무 ${workLabel(Math.max(0,mins))}`:'퇴근할 직원을 선택해 주세요.';if(rec){$('#checkoutStartTime').textContent=fmtTime(new Date(rec.datetime));$('#checkoutEndTime').textContent=fmtTime(new Date(checkoutInput.value));$('#checkoutDuration').textContent=workLabel(Math.max(0,mins));$('#checkoutResultBadge').textContent='근무 중';$('#checkoutResultText').textContent=`${rec.name}님, 오늘도 힘차게 하루를 마무리해요.`}};checkoutSelect.addEventListener('change',showShift);checkoutInput.addEventListener('input',showShift);showShift();$('#checkoutStatus').textContent=available.length?'퇴근 대기':done?'퇴근 완료':'출근 기록 없음'}
   if(checkoutForm)checkoutForm.addEventListener('submit',async e=>{e.preventDefault();if(checkoutInput.dataset.autoTime!=='false')checkoutInput.value=toLocalInputValue(new Date());const submit=checkoutForm.querySelector('[type=submit]'),id=checkoutSelect.value,dt=new Date(checkoutInput.value),today=localDateKey(new Date()),rec=records.find(r=>r.id===id&&localDateKey(new Date(r.datetime))===today&&!r.checkoutDatetime),name=rec?.name;if(!rec){alert('오늘 퇴근 처리할 수 있는 출근 기록이 없습니다.');return}if(Number.isNaN(dt.getTime())||dt<new Date(rec.datetime)){alert('퇴근 시각은 출근 시각 이후로 입력해 주세요.');return}if(submit)submit.disabled=true;rec.checkoutIp=await requestClientIp();rec.checkoutDatetime=dt.toISOString();localStorage.setItem(STORAGE_KEY,JSON.stringify(records));$('#checkoutShift').textContent=`${name}님 · 근무 ${workLabel(workMinutes(rec))} · 퇴근 완료`;$('#checkoutStatus').textContent='퇴근 완료';$('#checkoutResultBadge').textContent='퇴근 완료';$('#checkoutResultText').textContent=`${name}님, 오늘도 수고하셨어요!`;$('#checkoutResultSubtext').textContent=`오늘 근무 ${workLabel(workMinutes(rec))}을 기록했어요.`;$('#checkoutStartTime').textContent=fmtTime(new Date(rec.datetime));$('#checkoutEndTime').textContent=fmtTime(dt);$('#checkoutDuration').textContent=workLabel(workMinutes(rec));checkoutForm.querySelector('button').disabled=true;checkoutForm.querySelector('button').textContent='퇴근 기록 완료 ✓';renderSummary();syncSheets('퇴근 기록 저장')});
   const form=$('#checkinForm');
   const checkinTime=$('#dateTimeInput');
@@ -147,9 +152,68 @@ function bind(){
 
 
 function sheetsStatus(message,isError=false){const el=$('#sheetsStatus');if(el){el.textContent=message;el.classList.toggle('error',isError)}}
-function initSheetsSettings(){const input=$('#sheetsUrlInput');if(!input)return;input.value=localStorage.getItem(SHEETS_URL_KEY)||'';const badge=$('#sheetsConnectionBadge');if(badge)badge.textContent=input.value?'URL 저장됨':'연결 안 됨';$('#sheetsHelpBtn')?.addEventListener('click',()=>$('#sheetsHelpDialog').showModal());$('#sheetsHelpOk')?.addEventListener('click',()=>$('#sheetsHelpDialog').close());$('#sheetsSaveBtn')?.addEventListener('click',()=>{const url=input.value.trim();if(url&&!/^https:\/\/script\.google\.com\/macros\/s\/[^\s]+\/exec(?:\?.*)?$/.test(url)){sheetsStatus('Apps Script 웹 앱 URL 형식을 확인해 주세요. (/exec 주소)',true);return}localStorage.setItem(SHEETS_URL_KEY,url);if(badge)badge.textContent=url?'URL 저장됨':'연결 안 됨';sheetsStatus(url?'웹 앱 URL을 이 브라우저에 저장했습니다.':'저장된 Sheets URL을 삭제했습니다.');});$('#sheetsTestBtn')?.addEventListener('click',()=>testSheets());$('#sheetsSyncBtn')?.addEventListener('click',()=>syncSheets('수동 동기화'));}
-async function testSheets(){const url=localStorage.getItem(SHEETS_URL_KEY)||$('#sheetsUrlInput')?.value.trim();if(!url){sheetsStatus('먼저 Apps Script 웹 앱 URL을 저장해 주세요.',true);return}try{sheetsStatus('Google Sheets 연결을 확인하고 있습니다…');const response=await fetch(`${url}?action=ping`,{method:'GET',redirect:'follow',mode:'no-cors',credentials:'include'});if(response.type==='opaque'||response.type==='opaqueredirect'){sheetsStatus('Google에 연결 요청을 보냈습니다. 브라우저가 응답을 숨겨 연결 성공은 여기서 확정할 수 없습니다. Apps Script 실행 기록에서 doGet 완료를 확인하세요.');return}if(!response.ok)throw new Error(`HTTP ${response.status}`);const data=await response.json();if(!data.ok)throw new Error(data.error||'응답 확인에 실패했습니다.');sheetsStatus('연결 성공 · '+(data.service||'Apps Script 웹 앱 응답 확인'));const badge=$('#sheetsConnectionBadge');if(badge)badge.textContent='연결됨'}catch(error){sheetsStatus(`연결 요청 결과를 확인하지 못했습니다: ${error.message}. Apps Script 실행 기록에서 doGet 실행 여부를 확인하고, 접근 권한을 넓히기 전에 보안 위험을 검토하세요.`,true)}}
-async function syncSheets(reason='동기화'){const url=localStorage.getItem(SHEETS_URL_KEY);if(!url){if($('#sheetsStatus'))sheetsStatus('먼저 설정에서 Google Sheets URL을 저장해 주세요.',true);return false}const btn=$('#sheetsSyncBtn');if(btn)btn.disabled=true;try{if($('#sheetsStatus'))sheetsStatus(`${reason} 중…`);const payload={settings,records,calendarEvents},body=JSON.stringify({action:'sync',payload});const response=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body,mode:'no-cors',credentials:'include',redirect:'follow'});if(response.type==='opaque'||response.type==='opaqueredirect'){if($('#sheetsStatus'))sheetsStatus(`${reason} 요청을 Google에 보냈습니다. 브라우저가 응답을 숨겨 저장 성공은 확정되지 않았습니다. Apps Script 실행 기록의 doPost 완료와 스프레드시트 설정 탭의 동기화 시각을 확인하세요.`);return null}if(!response.ok)throw new Error(`HTTP ${response.status}`);const result=await response.json();if(!result.ok)throw new Error(result.error||'동기화 실패');if($('#sheetsStatus'))sheetsStatus(`${reason} 완료 · 기록 ${result.recordCount}건 · ${new Date(result.syncedAt||Date.now()).toLocaleString('ko-KR')}`);const badge=$('#sheetsConnectionBadge');if(badge)badge.textContent='연결됨';return true}catch(error){if($('#sheetsStatus'))sheetsStatus(`${reason} 요청 결과를 확인하지 못했습니다: ${error.message}. Apps Script 실행 기록과 스프레드시트 동기화 시각을 확인하세요.`,true);return null}finally{if(btn)btn.disabled=false}}
+function initSheetsSettings(){
+  const input=$('#sheetsUrlInput');
+  if(!input)return;
+  const badge=$('#sheetsConnectionBadge'),signInSlot=$('#sheetsGoogleSignIn');
+  input.value=localStorage.getItem(SHEETS_URL_KEY)||'';
+  if(badge)badge.textContent=sheetsIdToken?'Google 로그인됨':'로그인 필요';
+  $('#sheetsHelpBtn')?.addEventListener('click',()=>$('#sheetsHelpDialog').showModal());
+  $('#sheetsHelpOk')?.addEventListener('click',()=>$('#sheetsHelpDialog').close());
+  $('#sheetsSaveBtn')?.addEventListener('click',()=>{
+    const url=input.value.trim();
+    if(url&&!/^https:\/\/script\.google\.com\/macros\/s\/[^\s]+\/exec(?:\?.*)?$/.test(url)){
+      sheetsStatus('Apps Script 웹 앱 URL 형식을 확인해 주세요. (/exec 주소)',true);return;
+    }
+    localStorage.setItem(SHEETS_URL_KEY,url);
+    sheetsStatus(url?'개인 Apps Script 웹 앱 URL을 이 브라우저에 저장했습니다.':'저장된 웹 앱 URL을 삭제했습니다.');
+  });
+  if(SHEETS_GOOGLE_CLIENT_ID&&SHEETS_GOOGLE_CLIENT_ID!=='SET_SITE_OAUTH_CLIENT_ID'&&window.google?.accounts?.id&&signInSlot){
+    google.accounts.id.initialize({client_id:SHEETS_GOOGLE_CLIENT_ID,callback:({credential})=>{
+      sheetsIdToken=credential||'';
+      if(sheetsIdToken)sessionStorage.setItem('latebook_sheets_id_token_v1',sheetsIdToken);
+      if(badge)badge.textContent=sheetsIdToken?'Google 로그인됨':'로그인 필요';
+      sheetsStatus(sheetsIdToken?'Google 로그인 완료 · 로그인 토큰은 현재 브라우저 탭 세션에만 저장됩니다.':'로그인을 완료하지 못했습니다.',!sheetsIdToken);
+    }});
+    google.accounts.id.renderButton(signInSlot,{type:'standard',theme:'outline',size:'large',text:'signin_with',shape:'pill'});
+  }else if(signInSlot){
+    signInSlot.textContent='사이트 Google 로그인 설정 준비 중';
+    signInSlot.setAttribute('aria-disabled','true');
+  }
+  $('#sheetsSignOutBtn')?.addEventListener('click',()=>{
+    sheetsIdToken='';sessionStorage.removeItem('latebook_sheets_id_token_v1');
+    if(badge)badge.textContent='로그인 필요';
+    sheetsStatus('로그아웃했습니다. 로그인 토큰을 현재 브라우저 탭 세션에서 삭제했습니다.');
+  });
+  $('#sheetsTestBtn')?.addEventListener('click',()=>testSheets());
+  $('#sheetsSyncBtn')?.addEventListener('click',()=>syncSheets('수동 동기화'));
+}
+function postSheetsRequest(request){
+  const url=localStorage.getItem(SHEETS_URL_KEY),form=document.createElement('form'),field=document.createElement('textarea');
+  form.method='POST';form.action=url;form.target='_blank';form.acceptCharset='UTF-8';form.hidden=true;
+  field.name='request';field.value=JSON.stringify(request);form.appendChild(field);
+  document.body.appendChild(form);form.submit();form.remove();
+}
+async function testSheets(){
+  const url=localStorage.getItem(SHEETS_URL_KEY),idToken=sheetsIdToken;
+  if(!url){sheetsStatus('먼저 개인 Apps Script 웹 앱 URL을 저장해 주세요.',true);return}
+  if(!idToken){sheetsStatus('먼저 배포 소유자 Google 계정으로 로그인해 주세요.',true);return}
+  try{sheetsStatus('연결 결과를 새 탭에서 확인합니다…');postSheetsRequest({action:'ping',idToken,clientId:SHEETS_GOOGLE_CLIENT_ID});sheetsStatus('연결 확인을 요청했습니다. 새 탭에서 ok:true인지 확인해 주세요.')}
+  catch(error){sheetsStatus(`연결 요청 실패: ${error.message}`,true)}
+}
+async function syncSheets(reason='동기화'){
+  const url=localStorage.getItem(SHEETS_URL_KEY);
+  if(!url){if($('#sheetsStatus'))sheetsStatus('먼저 설정에서 개인 Apps Script 웹 앱 URL을 저장해 주세요.',true);return false}
+  if(!sheetsIdToken){if($('#sheetsStatus'))sheetsStatus('배포 소유자 Google 계정으로 로그인한 뒤 동기화해 주세요.',true);return false}
+  const btn=$('#sheetsSyncBtn');if(btn)btn.disabled=true;
+  try{
+    if($('#sheetsStatus'))sheetsStatus(`${reason} 결과를 새 탭에서 확인합니다…`);
+    postSheetsRequest({action:'sync',idToken:sheetsIdToken,clientId:SHEETS_GOOGLE_CLIENT_ID,payload:{settings,records,calendarEvents}});
+    if($('#sheetsStatus'))sheetsStatus(`${reason} 요청을 보냈습니다. 새 탭에 ok:true가 표시되면 동기화에 성공한 것입니다.`);
+    return null;
+  }catch(error){if($('#sheetsStatus'))sheetsStatus(`${reason} 요청 실패: ${error.message}`,true);return false}
+  finally{if(btn)btn.disabled=false}
+}
 
 function mountKakaoVerticalAd(){
   const shell=document.querySelector('.app-shell');
