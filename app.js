@@ -30,7 +30,46 @@ function requestClientIp(){return getClientIp().catch(()=>null)}
 function workMinutes(r){if(!r.checkoutDatetime)return 0;const mins=Math.floor((new Date(r.checkoutDatetime)-new Date(r.datetime))/60000);return Number.isFinite(mins)?Math.max(0,mins):0}
 function workLabel(mins){const h=Math.floor(mins/60),m=mins%60;return `${h}시간${m?` ${m}분`:''}`}
 function calcStreak(m){if(!m.length)return 0;const days=[...new Map(m.map(r=>[new Date(r.datetime).toDateString(),r])).values()];let s=0;for(let i=days.length-1;i>=0;i--){if(days[i].late>0)s++;else break}return s}
-function updateClock(){referenceNow=new Date();const clock=$('#liveClock');if(clock)clock.textContent=`${pad(referenceNow.getHours())}:${pad(referenceNow.getMinutes())}:${pad(referenceNow.getSeconds())}`}
+function workingMilliseconds(start,end){
+  const from=new Date(start),to=new Date(end);
+  if(!Number.isFinite(from.getTime())||!Number.isFinite(to.getTime())||to<=from)return 0;
+  let duration=to-from;
+  const day=new Date(from);day.setHours(0,0,0,0);
+  while(day<to){
+    const lunchStart=new Date(day),lunchEnd=new Date(day);
+    lunchStart.setHours(12,0,0,0);lunchEnd.setHours(13,0,0,0);
+    duration-=Math.max(0,Math.min(to.getTime(),lunchEnd.getTime())-Math.max(from.getTime(),lunchStart.getTime()));
+    day.setDate(day.getDate()+1);
+  }
+  return Math.max(0,duration);
+}
+function mountWorkClock(){
+  const clock=$('#liveClock')?.closest('.clock-box');
+  if(!clock||$('#liveWorkClock'))return;
+  const group=document.createElement('div');group.className='header-clocks';
+  clock.replaceWith(group);group.appendChild(clock);
+  const work=document.createElement('div');work.className=clock.className+' work-clock-box';
+  work.title='출근 후 누적 근무시간 · 점심시간 12:00~13:00 제외';
+  work.innerHTML='<span id="liveWorkLabel">실시간 근무시간</span><strong id="liveWorkClock">--:--:--</strong>';
+  group.appendChild(work);
+  ['#nameInput','#checkoutName'].forEach(selector=>$(selector)?.addEventListener('change',updateClock));
+  window.addEventListener('storage',event=>{if(event.key===STORAGE_KEY){records=JSON.parse(event.newValue||'[]');updateClock()}});
+}
+function updateWorkClock(){
+  const output=$('#liveWorkClock'),label=$('#liveWorkLabel');if(!output)return;
+  const today=records.filter(r=>localDateKey(r.datetime)===localDateKey(referenceNow));
+  const selectedId=$('#checkoutName')?.value,selectedName=$('#nameInput')?.value;
+  let lockedName='';try{const lock=JSON.parse(localStorage.getItem(EMPLOYEE_LOCK_KEY)||'null');if(lock?.locked)lockedName=lock.name}catch{}
+  const name=selectedName||lockedName;
+  const active=today.filter(r=>!r.checkoutDatetime);
+  const record=selectedId?today.find(r=>r.id===selectedId):name?today.find(r=>r.name===name):active.length===1?active[0]:null;
+  label.textContent=record?`${record.name} · ${record.checkoutDatetime?'근무 종료':'실시간 근무시간'}`:'실시간 근무시간';
+  if(!record){output.textContent='--:--:--';output.title=name?'출근 전':active.length>1?'직원을 선택해 주세요':'근무 중인 기록 없음';return}
+  const seconds=Math.floor(workingMilliseconds(record.datetime,record.checkoutDatetime||referenceNow)/1000);
+  output.textContent=`${pad(Math.floor(seconds/3600))}:${pad(Math.floor(seconds/60)%60)}:${pad(seconds%60)}`;
+  output.title='점심시간 12:00~13:00 제외';
+}
+function updateClock(){referenceNow=new Date();const clock=$('#liveClock');if(clock)clock.textContent=`${pad(referenceNow.getHours())}:${pad(referenceNow.getMinutes())}:${pad(referenceNow.getSeconds())}`;updateWorkClock()}
 function bindLivePunchTime(input){
   if(!input)return;
   input.dataset.autoTime='true';
@@ -247,4 +286,4 @@ function mountKakaoVerticalAd(){
 }
 mountKakaoVerticalAd();
 
-(async()=>{referenceNow=await getReferenceTime();applyRuleText();populateEmployeeSelect();bindEmployeeLock();applyEmployeeLock();refreshBackupUi();$('#dateTimeInput')&&($('#dateTimeInput').value=toLocalInputValue(referenceNow));$('#startTimeSetting')&&($('#startTimeSetting').value=settings.startTime);$('#feeSetting')&&($('#feeSetting').value=settings.feePerMinute);$('#employeeSetting')&&($('#employeeSetting').value=settings.employees.join('\n'));updateClock();setInterval(updateClock,1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateClock()});window.addEventListener('pageshow',updateClock);window.addEventListener('focus',updateClock);bind();const last=monthRecords().slice(-1)[0]||null;updateResult(last);renderSummary()})();
+(async()=>{referenceNow=await getReferenceTime();applyRuleText();populateEmployeeSelect();bindEmployeeLock();applyEmployeeLock();refreshBackupUi();mountWorkClock();$('#dateTimeInput')&&($('#dateTimeInput').value=toLocalInputValue(referenceNow));$('#startTimeSetting')&&($('#startTimeSetting').value=settings.startTime);$('#feeSetting')&&($('#feeSetting').value=settings.feePerMinute);$('#employeeSetting')&&($('#employeeSetting').value=settings.employees.join('\n'));updateClock();setInterval(updateClock,1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateClock()});window.addEventListener('pageshow',updateClock);window.addEventListener('focus',updateClock);bind();const last=monthRecords().slice(-1)[0]||null;updateResult(last);renderSummary()})();

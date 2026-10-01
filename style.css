@@ -1199,3 +1199,15 @@ body[data-page="checkout"] .checkout-result-v23{grid-template-rows:auto auto;min
   body[data-page="checkout"] .checkout-duck-v23{width:min(46%,230px);max-width:46%;max-height:42%;bottom:6%}
   body[data-page="checkout"] .character-shadow-v13{width:min(28%,150px);bottom:5%;height:14px}
 }
+/* Reference time and lunch-adjusted live work time share the same card style. */
+.header-clocks{display:flex;gap:8px;flex-shrink:0}
+.header-clocks .clock-box{flex:1;min-width:160px}
+.header-clocks .clock-box span{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.checkin-v13-head>div:first-child,.page-head>div:first-child{min-width:0}
+@media(max-width:720px){
+  .checkin-v13-head,.page-head{flex-wrap:wrap;height:auto}
+  .header-clocks{width:100%;margin-bottom:8px}
+  .header-clocks .clock-box{min-width:0;padding:6px 8px}
+  .header-clocks .clock-box strong{font-size:18px}
+  .header-clocks .clock-box span{max-width:none}
+}
